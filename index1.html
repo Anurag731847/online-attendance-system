@@ -1,0 +1,1247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#FB8C00"/>
+    <link rel="manifest" href="manifest.json">
+    <title>Saral Upasthiti</title>
+    <style>
+        :root {
+            --primary-color: #FB8C00;
+            --secondary-color: #4CAF50;
+            --accent-color: #1976D2;
+            --danger-color: #D32F2F;
+            --light-gray: #f5f5f5;
+            --dark-text: #333;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            margin: 0;
+            background-color: var(--light-gray);
+            color: var(--dark-text);
+            overscroll-behavior-y: contain;
+        }
+        .app-container {
+            max-width: 600px;
+            margin: 0 auto;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .app-bar {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 16px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .app-bar .back-button, .app-bar .icon-button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0 8px;
+        }
+        .app-bar-title {
+           flex-grow: 1;
+        }
+        .app-bar-subtitle {
+            font-size: 0.9rem;
+            font-weight: normal;
+            opacity: 0.9;
+        }
+        .app-bar-date-input {
+            background-color: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 0.9rem;
+            margin-top: 4px;
+        }
+        .screen {
+            display: none;
+            flex-grow: 1;
+            background-color: white;
+            flex-direction: column;
+        }
+        .screen.active {
+            display: flex;
+        }
+        .screen-content {
+            padding-bottom: 80px;
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+        .auth-screen {
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+            background-color: var(--light-gray);
+        }
+        .auth-container {
+            width: 100%;
+            max-width: 350px;
+            padding: 24px;
+            box-sizing: border-box;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .auth-container h1 {
+             color: var(--primary-color);
+             text-align: center;
+             margin-top: 0;
+             margin-bottom: 24px;
+        }
+        .auth-container p {
+            text-align: center;
+            margin-top: 16px;
+        }
+        .auth-container p a {
+            color: var(--primary-color);
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .list {
+            list-style: none;
+            padding: 8px;
+            margin: 0;
+        }
+        .list-item {
+            background-color: #fff;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            transition: background-color 0.2s;
+        }
+        .list-item-clickable {
+            cursor: pointer;
+        }
+        .list-item-clickable:hover {
+            background-color: #f9f9f9;
+        }
+        .list-item .icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #FFF3E0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 16px;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+        .list-item .title {
+            font-weight: bold;
+            flex-grow: 1;
+        }
+        .student-item input[type="checkbox"] {
+            transform: scale(1.5);
+            margin-left: 16px;
+            accent-color: var(--primary-color);
+        }
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+        }
+        .btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.2s;
+        }
+        .btn:hover {
+            opacity: 0.9;
+        }
+        .btn.gemini-btn {
+            background: linear-gradient(45deg, #4285F4, #9B72CB, #D96570, #F2A60C);
+            margin-top: 16px;
+        }
+        .btn.manage-btn { background-color: var(--accent-color); font-size: 0.9rem; padding: 8px 12px; margin-left: 10px; width: auto; }
+        .btn.delete-btn { background-color: var(--danger-color); font-size: 0.9rem; padding: 8px 12px; margin-left: 10px; width: auto; }
+        .action-button {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: calc(100% - 40px);
+            max-width: 560px;
+            padding: 16px;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+        .action-button.save-btn { background-color: var(--secondary-color); }
+        .action-button.add-class-btn { background-color: var(--accent-color); }
+        .sync-container {
+            padding: 10px 16px;
+            background-color: #fff3e0;
+            border-bottom: 1px solid #ffe0b2;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .sync-container button {
+            background-color: var(--accent-color);
+            color: white; border: none; padding: 8px 16px;
+            border-radius: 6px; cursor: pointer;
+        }
+        .sync-container span {
+            font-size: 0.9rem;
+        }
+        .report-summary {
+            padding: 16px;
+            display: flex;
+            justify-content: space-around;
+            text-align: center;
+            background-color: #f7f7f7;
+            border-bottom: 1px solid #eee;
+        }
+        .report-summary-item { padding: 8px; }
+        .report-summary-item .value { font-size: 1.5rem; font-weight: bold; }
+        .report-summary-item .label { font-size: 0.9rem; color: #555; }
+        .report-summary-item .value.green { color: var(--secondary-color); }
+        .report-summary-item .value.red { color: var(--danger-color); }
+        #geminiActionContainer { padding: 0 16px 16px 16px; border-bottom: 1px solid #eee;}
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.6); display: none; align-items: center;
+            justify-content: center; z-index: 2000;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal-content {
+            background-color: white; padding: 24px; border-radius: 12px;
+            width: calc(100% - 40px); max-width: 400px; text-align: center;
+        }
+        .modal-content h3 { margin-top: 0; }
+        .form-group { margin-bottom: 16px; text-align: left; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: bold; }
+        .form-group input, .form-group textarea {
+            width: 100%; padding: 12px; border-radius: 8px;
+            border: 1px solid #ccc; box-sizing: border-box; font-size: 1rem;
+        }
+        .modal-actions {
+            display: flex; justify-content: center; gap: 10px; margin-top: 24px;
+        }
+        .modal-actions .btn-secondary { background-color: #ccc; }
+        .modal-actions .btn-danger { background-color: var(--danger-color); }
+        #geminiResultContent {
+            background-color: var(--light-gray);
+            padding: 16px;
+            border-radius: 8px;
+            text-align: left;
+            white-space: pre-wrap;
+            max-height: 40vh;
+            overflow-y: auto;
+            margin-bottom: 16px;
+        }
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 4px solid var(--primary-color);
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .toast {
+            position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%);
+            background-color: #333; color: white; padding: 12px 24px;
+            border-radius: 8px; transition: bottom 0.5s ease; z-index: 3000;
+        }
+        .toast.show { bottom: 30px; }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- ===== Auth Screen ===== -->
+        <div id="authScreen" class="screen active auth-screen">
+             <div id="loginContainer" class="auth-container">
+                 <h1>Welcome Back!</h1>
+                 <form id="loginForm" style="width: 100%;">
+                     <div class="form-group">
+                         <label for="loginTeacherId">Teacher ID</label>
+                         <input type="text" id="loginTeacherId" placeholder="Enter your registered ID" required>
+                     </div>
+                     <div class="form-group">
+                         <label for="loginPassword">Password</label>
+                         <input type="password" id="loginPassword" placeholder="Enter your password" required>
+                     </div>
+                     <button type="submit" class="btn">Login</button>
+                 </form>
+                 <p>Don't have an account? <a id="showSignUpLink">Sign Up</a></p>
+             </div>
+             <div id="signUpContainer" class="auth-container" style="display: none;">
+                 <h1>Create Account</h1>
+                 <form id="signUpForm" style="width: 100%;">
+                     <div class="form-group">
+                         <label for="signUpTeacherId">Choose a Teacher ID</label>
+                         <input type="text" id="signUpTeacherId" placeholder="e.g., Anurag_singh" required>
+                     </div>
+                     <div class="form-group">
+                         <label for="signUpPassword">Choose a Password</label>
+                         <input type="password" id="signUpPassword" placeholder="Minimum 6 characters" required>
+                     </div>
+                     <button type="submit" class="btn">Sign Up</button>
+                 </form>
+                 <p>Already have an account? <a id="showLoginLink">Login</a></p>
+             </div>
+        </div>
+        
+        <!-- ===== Home Screen ===== -->
+        <div id="homeScreen" class="screen">
+            <header class="app-bar">
+                <div class="app-bar-title">My Classes</div>
+                <button id="logoutBtn" class="icon-button" title="Logout">&#10162;</button> <!-- Logout Symbol -->
+            </header>
+            <main class="screen-content">
+                <div id="userIdDisplay" style="padding: 10px; text-align: center; background-color: #fff3e0; display: none;"></div>
+                <ul id="classList" class="list"></ul>
+                <div id="emptyState" class="empty-state" style="display: none;">
+                    <h3>No Classes Found</h3>
+                    <p>Tap below to add your first class.</p>
+                    <button id="addFirstClassBtn" class="btn" style="width: auto;">Add New Class</button>
+                </div>
+            </main>
+            <button id="addClassBtn" class="action-button add-class-btn" style="display: none;">+ Add New Class</button>
+        </div>
+
+        <!-- ===== Management Screen ===== -->
+        <div id="managementScreen" class="screen">
+            <header class="app-bar">
+                <button class="back-button">&larr;</button>
+                <div class="app-bar-title">
+                    <span id="manageClassName"></span>
+                    <div class="app-bar-subtitle">Manage Students</div>
+                </div>
+            </header>
+            <main class="screen-content"><ul id="managementStudentList" class="list"></ul></main>
+            <button id="addStudentBtn" class="action-button add-class-btn">+ Add New Student</button>
+        </div>
+        
+        <!-- ===== Report Screen ===== -->
+        <div id="reportScreen" class="screen">
+              <header class="app-bar">
+                <button class="back-button">&larr;</button>
+                <div class="app-bar-title">
+                    <span id="reportStudentName"></span>
+                    <div class="app-bar-subtitle">Attendance Report</div>
+                </div>
+            </header>
+            <main class="screen-content">
+                <div id="reportFilters" style="padding: 16px; background-color: #fff; border-bottom: 1px solid #eee; text-align: center;">
+                    <label for="reportMonth">Select Month:</label>
+                    <input type="month" id="reportMonth" class="app-bar-date-input" style="color: var(--dark-text); background-color: var(--light-gray);">
+                </div>
+                <div id="reportSummary" class="report-summary"></div>
+                <div id="geminiActionContainer"></div>
+                <ul id="reportDateList" class="list"></ul>
+            </main>
+        </div>
+
+        <!-- ===== Attendance Screen ===== -->
+        <div id="attendanceScreen" class="screen">
+            <header class="app-bar">
+                <button class="back-button">&larr;</button>
+                <div class="app-bar-title">
+                    <span id="attendanceClassName"></span>
+                    <div><input type="date" id="attendanceDate" class="app-bar-date-input"></div>
+                </div>
+            </header>
+            <main class="screen-content">
+                <ul id="attendanceStudentList" class="list"></ul>
+                 <div id="emptyAttendanceState" class="empty-state" style="display: none;">
+                    <h3>No Students to Mark</h3>
+                    <p>Add students in the management screen first.</p>
+                </div>
+            </main>
+            <button id="saveAttendanceBtn" class="action-button save-btn">SAVE ATTENDANCE</button>
+        </div>
+    </div>
+    
+    <!-- Modals -->
+    <div id="addClassModal" class="modal-overlay">
+        <div class="modal-content" style="text-align: left;">
+            <h3>Add New Class</h3>
+            <form id="addClassForm">
+                <div class="form-group">
+                    <label for="newClassName">Class Name</label>
+                    <input type="text" id="newClassName" placeholder="e.g., Class 6 - Section B" required>
+                </div>
+                <div class="modal-actions" style="justify-content: flex-end;">
+                    <button type="button" class="btn btn-secondary" id="cancelAddClass">Cancel</button>
+                    <button type="submit" class="btn" style="width: auto;">Save Class</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="addStudentModal" class="modal-overlay">
+        <div class="modal-content" style="text-align: left;">
+            <h3>Add New Student</h3>
+            <form id="addStudentForm">
+                <div class="form-group">
+                    <label for="newStudentName">Student Name</label>
+                    <input type="text" id="newStudentName" placeholder="e.g., Anurag Singh" required>
+                </div>
+                <div class="form-group">
+                    <label for="newStudentRoll">Roll Number</label>
+                    <input type="number" id="newStudentRoll" placeholder="e.g., 15" required>
+                </div>
+                <div class="modal-actions" style="justify-content: flex-end;">
+                    <button type="button" class="btn btn-secondary" id="cancelAddStudent">Cancel</button>
+                    <button type="submit" class="btn" style="width: auto;">Save Student</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div id="confirmDeleteModal" class="modal-overlay">
+        <div class="modal-content">
+            <h3>Confirm Student Deletion</h3>
+            <p>Are you sure you want to delete this student? All their attendance records will also be removed.</p>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" id="cancelDeleteStudent">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteStudentBtn" style="width: auto;">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="confirmDeleteClassModal" class="modal-overlay">
+        <div class="modal-content">
+            <h3>Confirm Class Deletion</h3>
+            <p>Are you sure? Deleting this class will also delete ALL its students and their attendance records permanently.</p>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" id="cancelDeleteClass">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteClassBtn" style="width: auto;">Delete Class</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="geminiResultModal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 id="geminiResultTitle">✨ AI Generated Content</h3>
+            <div id="geminiLoader" class="loader" style="display: none;"></div>
+            <div id="geminiResultContent" style="display: none;"></div>
+            <textarea id="copyHelper" style="opacity: 0; position: absolute; left: -9999px;"></textarea>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" id="closeGeminiModal">Close</button>
+                <button type="button" class="btn" id="copyGeminiResultBtn" style="width: auto;">Copy Text</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="toast" class="toast"></div>
+
+    <script type="module">
+        // --- Firebase Initialization and Imports ---
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, query, where, getDocs, addDoc, setDoc, deleteDoc, doc, getDoc, onSnapshot, writeBatch, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        
+        // This is a log-level setting for Firestore; keep it for debugging.
+        setLogLevel('debug');
+
+        // Firebase-specific global variables provided by the environment
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+        
+        let app, db, auth, userId;
+        let currentTeacherId = null;
+        let isAuthReady = false;
+
+        // --- PWA Service Worker and Manifest Setup ---
+        const manifest = {
+            "name": "Saral Upasthiti",
+            "short_name": "Upasthiti",
+            "start_url": ".",
+            "display": "standalone",
+            "background_color": "#FB8C00",
+            "theme_color": "#FB8C00",
+            "description": "An offline-first attendance app.",
+            "icons": [{
+                "src": "https://www.gstatic.com/images/branding/product/1x/drive_2020q4_48dp.png",
+                "sizes": "48x48",
+                "type": "image/png"
+            }, {
+                "src": "https://www.gstatic.com/images/branding/product/1x/drive_2020q4_96dp.png",
+                "sizes": "96x96",
+                "type": "image/png"
+            }, {
+                "src": "https://www.gstatic.com/images/branding/product/1x/drive_2020q4_192dp.png",
+                "sizes": "192x192",
+                "type": "image/png"
+            }]
+        };
+
+        const serviceWorkerCode = `
+            const CACHE_NAME = 'saral-upasthiti-cache-v1';
+            const URLS_TO_CACHE = [
+                './'
+            ];
+            self.addEventListener('install', event => {
+                event.waitUntil(
+                    caches.open(CACHE_NAME)
+                        .then(cache => {
+                            return cache.addAll(URLS_TO_CACHE);
+                        })
+                );
+            });
+            self.addEventListener('fetch', event => {
+                event.respondWith(
+                    caches.match(event.request)
+                        .then(response => {
+                            return response || fetch(event.request);
+                        })
+                );
+            });
+        `;
+        
+        // Dynamically create and link manifest
+        const manifestBlob = new Blob([JSON.stringify(manifest)], {type: 'application/json'});
+        const manifestUrl = URL.createObjectURL(manifestBlob);
+        document.querySelector('head').insertAdjacentHTML('beforeend', `<link rel="manifest" href="${manifestUrl}">`);
+
+        // Register Service Worker
+        if ('serviceWorker' in navigator) {
+            const swBlob = new Blob([serviceWorkerCode], { type: 'application/javascript' });
+            const swUrl = URL.createObjectURL(swBlob);
+            navigator.serviceWorker.register(swUrl)
+                .then(registration => console.log('Service Worker registered with scope:', registration.scope))
+                .catch(error => console.log('Service Worker registration failed:', error));
+        }
+
+        // --- Firebase Authentication Logic ---
+        async function initializeFirebase() {
+            try {
+                if (Object.keys(firebaseConfig).length === 0) {
+                    console.error("Firebase config is empty. Please check the environment variables.");
+                    return;
+                }
+                app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+
+                onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        userId = user.uid;
+                        isAuthReady = true;
+                    } else {
+                        userId = null;
+                        isAuthReady = true;
+                    }
+                });
+
+                if (initialAuthToken) {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (error) {
+                console.error("Firebase initialization failed:", error);
+            }
+        }
+        
+        async function handleLogin(e) {
+            e.preventDefault();
+            const teacherId = document.getElementById('loginTeacherId').value.trim();
+            const password = document.getElementById('loginPassword').value;
+
+            if (!isAuthReady) {
+                showToast("Please wait, app is initializing.");
+                return;
+            }
+
+            try {
+                // Public collection for teacher credentials
+                const teachersRef = collection(db, `artifacts/${appId}/public/data/teacher_registry`);
+                const q = query(teachersRef, where("teacher_id", "==", teacherId));
+                const querySnapshot = await getDocs(q);
+                
+                if (querySnapshot.empty) {
+                    showToast("Login failed. Teacher ID not found.");
+                    return;
+                }
+                
+                const teacherDoc = querySnapshot.docs[0];
+                const teacherData = teacherDoc.data();
+                
+                if (teacherData.password !== password) {
+                    showToast("Login failed. Incorrect password.");
+                    return;
+                }
+                
+                currentTeacherId = teacherId;
+                showToast("Login successful!");
+                document.getElementById('userIdDisplay').textContent = `Logged in as: ${currentTeacherId}`;
+                document.getElementById('userIdDisplay').style.display = 'block';
+                navigateTo('home');
+                setupRealtimeListeners();
+
+            } catch (error) {
+                console.error("Login error:", error);
+                showToast("An error occurred during login.");
+            }
+        }
+        
+        async function handleSignUp(e) {
+            e.preventDefault();
+            const teacherId = document.getElementById('signUpTeacherId').value.trim();
+            const password = document.getElementById('signUpPassword').value;
+
+            if (password.length < 6) {
+                showToast("Password must be at least 6 characters long.");
+                return;
+            }
+            if (!isAuthReady) {
+                showToast("Please wait, app is initializing.");
+                return;
+            }
+
+            try {
+                // Public collection for teacher credentials
+                const teachersRef = collection(db, `artifacts/${appId}/public/data/teacher_registry`);
+                const q = query(teachersRef, where("teacher_id", "==", teacherId));
+                const querySnapshot = await getDocs(q);
+
+                if (!querySnapshot.empty) {
+                    showToast("This Teacher ID is already taken. Please choose another.");
+                    return;
+                }
+
+                await addDoc(teachersRef, {
+                    teacher_id: teacherId,
+                    password: password // In a real app, this would be hashed for security
+                });
+
+                currentTeacherId = teacherId;
+                showToast("Account created successfully!");
+                document.getElementById('userIdDisplay').textContent = `Logged in as: ${currentTeacherId}`;
+                document.getElementById('userIdDisplay').style.display = 'block';
+                navigateTo('home');
+                setupRealtimeListeners();
+            } catch (error) {
+                console.error("Sign up error:", error);
+                showToast("An error occurred during sign-up.");
+            }
+        }
+
+        async function handleLogout() {
+            currentTeacherId = null;
+            navigateTo('auth');
+            showToast("Logged out successfully.");
+        }
+
+        // --- Firestore Database Functions ---
+        function getCollection(collectionName) {
+            if (!currentTeacherId) {
+                console.error("Teacher ID is not set. Cannot access Firestore.");
+                return null;
+            }
+            // Private collection for teacher's data
+            return collection(db, `artifacts/${appId}/users/${userId}/${currentTeacherId}_${collectionName}`);
+        }
+        
+        let classesData = [];
+        let studentsData = [];
+        let attendanceData = [];
+        let unsubscribeListeners = [];
+
+        function setupRealtimeListeners() {
+            if (!currentTeacherId) return;
+
+            // Clear old listeners to prevent memory leaks
+            unsubscribeListeners.forEach(unsub => unsub());
+            unsubscribeListeners = [];
+
+            // Classes Listener
+            const classesUnsub = onSnapshot(getCollection('classes'), (snapshot) => {
+                classesData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderHomeScreen();
+            }, (error) => {
+                console.error("Error fetching classes:", error);
+                showToast("Error fetching classes. Check your connection.");
+            });
+            unsubscribeListeners.push(classesUnsub);
+
+            // Students Listener
+            const studentsUnsub = onSnapshot(getCollection('students'), (snapshot) => {
+                studentsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                if (screens.management.classList.contains('active')) {
+                    renderManagementScreen(currentClassId);
+                }
+                if (screens.attendance.classList.contains('active')) {
+                    renderAttendanceScreen(currentClassId, attendanceDateEl.value);
+                }
+            }, (error) => {
+                console.error("Error fetching students:", error);
+            });
+            unsubscribeListeners.push(studentsUnsub);
+
+
+            // Attendance Listener
+            const attendanceUnsub = onSnapshot(getCollection('attendance'), (snapshot) => {
+                attendanceData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                const currentScreen = document.querySelector('.screen.active').id;
+                if (currentScreen === 'attendanceScreen') {
+                     renderAttendanceScreen(currentClassId, attendanceDateEl.value);
+                } else if (currentScreen === 'reportScreen') {
+                     const studentId = document.getElementById('reportStudentName').dataset.studentId;
+                     if(studentId) { renderReportScreen(studentId); }
+                }
+            }, (error) => {
+                console.error("Error fetching attendance:", error);
+            });
+            unsubscribeListeners.push(attendanceUnsub);
+        }
+        
+        async function saveClass(className) {
+            try {
+                const classesRef = getCollection('classes');
+                if (!classesRef) return;
+                await addDoc(classesRef, { name: className });
+                showToast('Class added successfully!');
+            } catch (error) {
+                console.error("Error adding class:", error);
+                showToast("Failed to add class.");
+            }
+        }
+
+        async function saveStudent(classId, studentName, studentRoll) {
+            try {
+                const studentsRef = getCollection('students');
+                if (!studentsRef) return;
+                const q = query(studentsRef, where("class_id", "==", classId), where("roll_number", "==", studentRoll));
+                const querySnapshot = await getDocs(q);
+                if (!querySnapshot.empty) {
+                    showToast('Error: This roll number already exists in this class.');
+                    return;
+                }
+
+                await addDoc(studentsRef, {
+                    name: studentName,
+                    roll_number: studentRoll,
+                    class_id: classId
+                });
+                showToast('Student added successfully!');
+            } catch (error) {
+                console.error("Error adding student:", error);
+                showToast("Failed to add student.");
+            }
+        }
+
+        async function saveAttendance(attendanceRecords) {
+            try {
+                const batch = writeBatch(db);
+                const attendanceRef = getCollection('attendance');
+                if (!attendanceRef) return;
+                
+                for (const record of attendanceRecords) {
+                    const q = query(attendanceRef, where("student_id", "==", record.student_id), where("date", "==", record.date));
+                    const querySnapshot = await getDocs(q);
+
+                    if (!querySnapshot.empty) {
+                        const docRef = querySnapshot.docs[0].ref;
+                        batch.update(docRef, { status: record.status });
+                    } else {
+                        const newDocRef = doc(attendanceRef);
+                        batch.set(newDocRef, record);
+                    }
+                }
+                await batch.commit();
+                showToast('Attendance saved successfully!');
+            } catch (error) {
+                console.error("Error saving attendance:", error);
+                showToast("Failed to save attendance.");
+            }
+        }
+
+        async function deleteStudent(studentId) {
+            try {
+                const batch = writeBatch(db);
+                const studentsRef = getCollection('students');
+                const attendanceRef = getCollection('attendance');
+                if (!studentsRef || !attendanceRef) return;
+
+                // Delete the student document
+                batch.delete(doc(studentsRef, studentId));
+                // Find and delete all attendance records for this student
+                const q = query(attendanceRef, where("student_id", "==", studentId));
+                const querySnapshot = await getDocs(q);
+                querySnapshot.forEach(doc => {
+                    batch.delete(doc.ref);
+                });
+                await batch.commit();
+                showToast('Student and their attendance records deleted successfully!');
+            } catch (error) {
+                console.error("Error deleting student:", error);
+                showToast("Failed to delete student.");
+            }
+        }
+        
+        async function deleteClass(classId) {
+            try {
+                const batch = writeBatch(db);
+                const classesRef = getCollection('classes');
+                const studentsRef = getCollection('students');
+                const attendanceRef = getCollection('attendance');
+                if (!classesRef || !studentsRef || !attendanceRef) return;
+                
+                // Delete the class document
+                batch.delete(doc(classesRef, classId));
+                // Find all students in this class
+                const studentsQuery = query(studentsRef, where("class_id", "==", classId));
+                const studentsSnapshot = await getDocs(studentsQuery);
+                const studentIdsToDelete = [];
+                studentsSnapshot.forEach(studentDoc => {
+                    studentIdsToDelete.push(studentDoc.id);
+                    batch.delete(studentDoc.ref);
+                });
+                // Find and delete all attendance records for these students
+                if (studentIdsToDelete.length > 0) {
+                    // Firestore 'in' query supports up to 10 items. To be safe, we'll fetch and delete them individually.
+                    for (const studentId of studentIdsToDelete) {
+                        const attendanceQuery = query(attendanceRef, where("student_id", "==", studentId));
+                        const attendanceSnapshot = await getDocs(attendanceQuery);
+                        attendanceSnapshot.forEach(attDoc => {
+                            batch.delete(attDoc.ref);
+                        });
+                    }
+                }
+                await batch.commit();
+                showToast('Class and all associated data deleted successfully!');
+            } catch (error) {
+                console.error("Error deleting class:", error);
+                showToast("Failed to delete class.");
+            }
+        }
+        
+        // --- UI Rendering ---
+        const screens = {
+            auth: document.getElementById('authScreen'),
+            home: document.getElementById('homeScreen'),
+            management: document.getElementById('managementScreen'),
+            attendance: document.getElementById('attendanceScreen'),
+            report: document.getElementById('reportScreen'),
+        };
+        const modals = {
+            addClass: document.getElementById('addClassModal'),
+            addStudent: document.getElementById('addStudentModal'),
+            confirmDelete: document.getElementById('confirmDeleteModal'),
+            confirmDeleteClass: document.getElementById('confirmDeleteClassModal'),
+            geminiResult: document.getElementById('geminiResultModal'),
+        };
+        const loginContainer = document.getElementById('loginContainer');
+        const signUpContainer = document.getElementById('signUpContainer');
+        const classList = document.getElementById('classList');
+        const emptyState = document.getElementById('emptyState');
+        const manageClassName = document.getElementById('manageClassName');
+        const managementStudentList = document.getElementById('managementStudentList');
+        const attendanceClassName = document.getElementById('attendanceClassName');
+        const attendanceDateEl = document.getElementById('attendanceDate');
+        const attendanceStudentList = document.getElementById('attendanceStudentList');
+        const emptyAttendanceState = document.getElementById('emptyAttendanceState');
+        const saveAttendanceBtn = document.getElementById('saveAttendanceBtn');
+        const toastEl = document.getElementById('toast');
+        const reportStudentName = document.getElementById('reportStudentName');
+        const reportSummary = document.getElementById('reportSummary');
+        const reportDateList = document.getElementById('reportDateList');
+        const geminiActionContainer = document.getElementById('geminiActionContainer');
+        const geminiLoader = document.getElementById('geminiLoader');
+        const geminiResultContent = document.getElementById('geminiResultContent');
+        const copyGeminiResultBtn = document.getElementById('copyGeminiResultBtn');
+        const reportMonthEl = document.getElementById('reportMonth');
+
+        let currentClassId = null;
+        let studentToDeleteId = null;
+        let classToDeleteId = null;
+
+        function navigateTo(screenName, contextId = null) {
+            currentClassId = contextId;
+            Object.values(screens).forEach(s => s.classList.remove('active'));
+            screens[screenName].classList.add('active');
+        }
+        function showModal(modalName) { modals[modalName].classList.add('active'); }
+        function hideModals() { Object.values(modals).forEach(m => m.classList.remove('active')); }
+
+        function renderHomeScreen() {
+            classList.innerHTML = '';
+            if (classesData.length === 0) {
+                emptyState.style.display = 'block';
+                document.getElementById('addClassBtn').style.display = 'none';
+            } else {
+                emptyState.style.display = 'none';
+                document.getElementById('addClassBtn').style.display = 'block';
+                classesData.forEach(cls => {
+                    const li = document.createElement('li');
+                    li.className = 'list-item';
+                    li.innerHTML = `
+                        <div class="icon list-item-clickable" onclick="showAttendanceScreen('${cls.id}')">🏫</div>
+                        <span class="title list-item-clickable" onclick="showAttendanceScreen('${cls.id}')">${cls.name}</span>
+                        <button class="btn manage-btn" data-class-id="${cls.id}">Manage</button>
+                        <button class="btn delete-btn" data-class-id="${cls.id}">Delete</button>
+                    `;
+                    li.querySelector('.manage-btn').onclick = (e) => showManagementScreen(e.target.dataset.classId);
+                    li.querySelector('.delete-btn').onclick = (e) => {
+                        classToDeleteId = e.target.dataset.classId;
+                        showModal('confirmDeleteClass');
+                    };
+                    classList.appendChild(li);
+                });
+            }
+        }
+
+        window.showAttendanceScreen = function(classId) {
+            navigateTo('attendance', classId);
+            renderAttendanceScreen(classId);
+        }
+
+        function renderManagementScreen(classId) {
+            currentClassId = classId;
+            const selectedClass = classesData.find(c => c.id === classId);
+            if (!selectedClass) {
+                showToast("Error: Class not found.");
+                navigateTo('home');
+                return;
+            }
+            const studentsInClass = studentsData.filter(s => s.class_id === classId);
+            manageClassName.textContent = selectedClass.name;
+            managementStudentList.innerHTML = '';
+
+            if (studentsInClass.length === 0) {
+                managementStudentList.innerHTML = `<div class="empty-state"><p>No students found. Add one below.</p></div>`;
+            } else {
+                studentsInClass.sort((a, b) => a.roll_number - b.roll_number).forEach(student => {
+                    const li = document.createElement('li');
+                    li.className = 'list-item';
+                    li.innerHTML = `
+                        <div class="icon">${student.roll_number}</div>
+                        <div class="title list-item-clickable" style="flex-grow:1" onclick="showReportScreen('${student.id}')">${student.name}</div>
+                        <button class="btn delete-btn" data-student-id="${student.id}">Delete</button>
+                    `;
+                    li.querySelector('.delete-btn').onclick = (e) => {
+                        studentToDeleteId = e.target.dataset.studentId;
+                        showModal('confirmDelete');
+                    };
+                    managementStudentList.appendChild(li);
+                });
+            }
+        }
+        
+        window.showReportScreen = function(studentId) {
+            navigateTo('report');
+            // Set current month as default for report
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = (today.getMonth() + 1).toString().padStart(2, '0');
+            reportMonthEl.value = `${year}-${month}`;
+            renderReportScreen(studentId);
+        }
+
+        function renderReportScreen(studentId) {
+            const student = studentsData.find(s => s.id === studentId);
+            if (!student) {
+                showToast("Error: Student not found.");
+                navigateTo('home');
+                return;
+            }
+
+            const selectedMonth = reportMonthEl.value;
+            const [year, month] = selectedMonth.split('-');
+            const startDate = new Date(year, month - 1, 1).toISOString().slice(0, 10);
+            const endDate = new Date(year, month, 0).toISOString().slice(0, 10);
+
+            const selectedClass = classesData.find(c => c.id === student.class_id);
+            const classStudentIds = studentsData
+                .filter(s => s.class_id === student.class_id)
+                .map(s => s.id);
+            
+            const attendanceForMonth = attendanceData.filter(att => 
+                att.date >= startDate && att.date <= endDate
+            );
+
+            const lectureDates = [...new Set(attendanceForMonth
+                .filter(att => classStudentIds.includes(att.student_id))
+                .map(att => att.date))];
+            
+            const totalLectures = lectureDates.length;
+            const studentAttendanceRecords = attendanceForMonth.filter(att => att.student_id === studentId);
+            const attendedLectures = studentAttendanceRecords.filter(att => att.status === 'Present').length;
+            const percentage = totalLectures === 0 ? 0 : (attendedLectures / totalLectures) * 100;
+            
+            reportStudentName.textContent = student.name;
+            reportStudentName.dataset.studentId = studentId;
+
+            reportSummary.innerHTML = `
+                <div class="report-summary-item">
+                    <div class="value">${totalLectures}</div>
+                    <div class="label">Total Lectures</div>
+                </div>
+                <div class="report-summary-item">
+                    <div class="value green">${attendedLectures}</div>
+                    <div class="label">Attended</div>
+                </div>
+                <div class="report-summary-item">
+                    <div class="value ${percentage < 75 ? 'red' : 'green'}">${percentage.toFixed(1)}%</div>
+                    <div class="label">Percentage</div>
+                </div>
+            `;
+
+            geminiActionContainer.innerHTML = `
+                <button id="generateNoteBtn" class="btn gemini-btn">✨ Generate Performance Note</button>
+                <button id="generateSmsBtn" class="btn gemini-btn" style="display: ${percentage < 75 && percentage > 0 ? 'block' : 'none'};">✨ Draft Parent SMS</button>
+            `;
+            document.getElementById('generateNoteBtn').onclick = () => handleGenerateNote(student, attendedLectures, totalLectures, percentage);
+            document.getElementById('generateSmsBtn').onclick = () => handleGenerateSms(student, selectedClass, percentage);
+            
+            reportDateList.innerHTML = '';
+            if(lectureDates.length === 0){
+                reportDateList.innerHTML = `<div class="empty-state"><p>No attendance has been recorded for this month.</p></div>`;
+            } else {
+                lectureDates.sort((a,b) => b.localeCompare(a)).forEach(date => {
+                    const record = studentAttendanceRecords.find(att => att.date === date);
+                    const status = record ? record.status : 'N/A';
+                    const li = document.createElement('li');
+                    li.className = 'list-item';
+                    li.innerHTML = `
+                        <div class="icon" style="background-color: ${status === 'Present' ? '#E8F5E9' : '#FFEBEE'}; color: ${status === 'Present' ? 'var(--secondary-color)' : 'var(--danger-color)'}">${status.charAt(0)}</div>
+                        <span class="title">${new Date(date + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                        <span style="font-weight:bold; color: ${status === 'Present' ? 'var(--secondary-color)' : 'var(--danger-color)'}">${status}</span>
+                    `;
+                    reportDateList.appendChild(li);
+                });
+            }
+        }
+
+        function renderAttendanceScreen(classId, dateString = new Date().toISOString().slice(0, 10)) {
+            currentClassId = classId;
+            const selectedClass = classesData.find(c => c.id === classId);
+            if (!selectedClass) {
+                showToast("Error: Class not found.");
+                navigateTo('home');
+                return;
+            }
+            attendanceDateEl.value = dateString;
+            const studentsInClass = studentsData.filter(s => s.class_id === classId);
+            attendanceClassName.textContent = selectedClass.name;
+            attendanceStudentList.innerHTML = '';
+
+            if(studentsInClass.length === 0){
+                emptyAttendanceState.style.display = 'block';
+                saveAttendanceBtn.style.display = 'none';
+            } else {
+                emptyAttendanceState.style.display = 'none';
+                saveAttendanceBtn.style.display = 'block';
+                studentsInClass.sort((a, b) => a.roll_number - b.roll_number).forEach(student => {
+                    const attendanceRecord = attendanceData.find(att => att.student_id === student.id && att.date === dateString);
+                    const isChecked = attendanceRecord ? attendanceRecord.status === 'Present' : true;
+                    const li = document.createElement('li');
+                    li.className = 'list-item student-item';
+                    li.innerHTML = `
+                        <div class="icon">${student.roll_number}</div>
+                        <span class="title">${student.name}</span>
+                        <input type="checkbox" data-student-id="${student.id}" ${isChecked ? 'checked' : ''}>
+                    `;
+                    li.addEventListener('click', (e) => {
+                        if (e.target.type !== 'checkbox') {
+                            const checkbox = li.querySelector('input[type="checkbox"]');
+                            checkbox.checked = !checkbox.checked;
+                        }
+                    });
+                    attendanceStudentList.appendChild(li);
+                });
+            }
+        }
+
+        // --- Gemini API Functions ---
+        async function callGeminiAPI(prompt) {
+            showModal('geminiResult');
+            geminiLoader.style.display = 'block';
+            geminiResultContent.style.display = 'none';
+            geminiResultContent.textContent = '';
+            
+            const apiKey = ""; 
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+
+            const payload = {
+                contents: [{
+                    parts: [{ text: prompt }]
+                }]
+            };
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error.message || `HTTP error! status: ${response.status}`);
+                }
+                const result = await response.json();
+                const text = result.candidates[0].content.parts[0].text;
+                geminiResultContent.textContent = text.trim();
+            } catch (error) {
+                console.error("Gemini API Error:", error);
+                geminiResultContent.textContent = `Error: Could not get a response from the AI. Please try again later.\n\nDetails: ${error.message}`;
+            } finally {
+                geminiLoader.style.display = 'none';
+                geminiResultContent.style.display = 'block';
+            }
+        }
+
+        function handleGenerateNote(student, attended, total, percentage) {
+            const prompt = `Act as a school teacher in India. A student named ${student.name} has an attendance of ${attended} out of ${total} lectures (${percentage.toFixed(1)}%).
+            Write a brief, constructive, and encouraging note (2-3 sentences) for their report card based on their attendance.
+            - If attendance is above 90%, praise their regularity.
+            - If attendance is between 75% and 90%, mention they have good attendance.
+            - If attendance is below 75%, express concern and strongly encourage regular attendance for better learning.
+            Keep the tone professional and supportive.`;
+            callGeminiAPI(prompt);
+        }
+
+        function handleGenerateSms(student, s_class, percentage) {
+            const prompt = `Act as a school teacher in rural India. A student named ${student.name} from class ${s_class.name} has low attendance (${percentage.toFixed(1)}%).
+            Draft a polite and formal SMS in Hindi to send to their parents, informing them of the low attendance and requesting them to meet the teacher.
+            Keep the SMS professional and under 160 characters.`;
+            callGeminiAPI(prompt);
+        }
+
+        // --- Utility Functions ---
+        function showToast(message) {
+            toastEl.textContent = message;
+            toastEl.classList.add('show');
+            setTimeout(() => toastEl.classList.remove('show'), 3000);
+        }
+
+        // --- Event Listeners ---
+        function showManagementScreen(classId) {
+            navigateTo('management', classId);
+            renderManagementScreen(classId);
+        }
+        
+        document.getElementById('showSignUpLink').onclick = () => {
+            loginContainer.style.display = 'none';
+            signUpContainer.style.display = 'block';
+        };
+        document.getElementById('showLoginLink').onclick = () => {
+            signUpContainer.style.display = 'none';
+            loginContainer.style.display = 'block';
+        };
+        
+        attendanceDateEl.onchange = () => {
+            renderAttendanceScreen(currentClassId, attendanceDateEl.value);
+        };
+
+        reportMonthEl.onchange = () => {
+            const studentId = document.getElementById('reportStudentName').dataset.studentId;
+            if (studentId) {
+                renderReportScreen(studentId);
+            }
+        };
+
+        document.querySelectorAll('.back-button').forEach(btn => btn.addEventListener('click', (e) => {
+            const currentScreen = e.target.closest('.screen');
+            if (currentScreen.id === 'reportScreen') {
+               navigateTo('management', currentClassId);
+               renderManagementScreen(currentClassId);
+            } else if (currentScreen.id === 'managementScreen' || currentScreen.id === 'attendanceScreen') {
+               navigateTo('home');
+            }
+        }));
+        
+        document.getElementById('loginForm').onsubmit = handleLogin;
+        document.getElementById('signUpForm').onsubmit = handleSignUp;
+        document.getElementById('logoutBtn').onclick = handleLogout;
+        document.getElementById('addClassBtn').onclick = () => showModal('addClass');
+        document.getElementById('addFirstClassBtn').onclick = () => showModal('addClass');
+        document.getElementById('addStudentBtn').onclick = () => showModal('addStudent');
+        document.getElementById('cancelAddClass').onclick = hideModals;
+        document.getElementById('cancelAddStudent').onclick = hideModals;
+        document.getElementById('cancelDeleteStudent').onclick = hideModals;
+        document.getElementById('confirmDeleteStudentBtn').onclick = () => { deleteStudent(studentToDeleteId); hideModals(); };
+        document.getElementById('cancelDeleteClass').onclick = hideModals;
+        document.getElementById('confirmDeleteClassBtn').onclick = () => { deleteClass(classToDeleteId); hideModals(); };
+        document.getElementById('closeGeminiModal').onclick = hideModals;
+        
+        document.getElementById('copyGeminiResultBtn').onclick = () => {
+            const textToCopy = geminiResultContent.textContent;
+            const copyHelper = document.getElementById('copyHelper');
+            copyHelper.value = textToCopy;
+            copyHelper.select();
+            document.execCommand('copy');
+            showToast("Text copied to clipboard!");
+        };
+
+        document.getElementById('addClassForm').onsubmit = (e) => {
+            e.preventDefault();
+            const className = document.getElementById('newClassName').value.trim();
+            if (className) {
+                saveClass(className);
+                document.getElementById('newClassName').value = '';
+                hideModals();
+            }
+        };
+
+        document.getElementById('addStudentForm').onsubmit = (e) => {
+            e.preventDefault();
+            const studentName = document.getElementById('newStudentName').value.trim();
+            const studentRoll = parseInt(document.getElementById('newStudentRoll').value);
+            if (studentName && studentRoll > 0) {
+                saveStudent(currentClassId, studentName, studentRoll);
+                document.getElementById('newStudentName').value = '';
+                document.getElementById('newStudentRoll').value = '';
+                hideModals();
+            }
+        };
+        
+        document.getElementById('saveAttendanceBtn').onclick = async () => {
+            document.getElementById('saveAttendanceBtn').disabled = true;
+            document.getElementById('saveAttendanceBtn').textContent = 'SAVING...';
+            const checkboxes = document.querySelectorAll('#attendanceStudentList input[type="checkbox"]');
+            const selectedDate = attendanceDateEl.value;
+            const recordsToSave = [];
+            checkboxes.forEach(cb => {
+                recordsToSave.push({
+                    student_id: cb.dataset.studentId,
+                    date: selectedDate,
+                    status: cb.checked ? 'Present' : 'Absent'
+                });
+            });
+            await saveAttendance(recordsToSave);
+            document.getElementById('saveAttendanceBtn').disabled = false;
+            document.getElementById('saveAttendanceBtn').textContent = 'SAVE ATTENDANCE';
+        };
+
+        // Initialize the app
+        initializeFirebase();
+    </script>
+</body>
+</html>
